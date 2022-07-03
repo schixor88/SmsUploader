@@ -6,6 +6,7 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -38,6 +39,8 @@ class MainActivity : AppCompatActivity() {
     lateinit var recycler: RecyclerView
     lateinit var adapter:SimpleSmsListAdapter
 
+    val shortCodes = arrayOf("CTZN_ALERT","THE_Alert","SP_OTP","Hello")
+
     var responseData:ArrayList<String> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,6 +51,11 @@ class MainActivity : AppCompatActivity() {
         searchInput = findViewById(R.id.input)
         button = findViewById(R.id.btn_search)
         recycler = findViewById(R.id.recycler)
+
+        var s:String = shortCodes.reduce { acc, s -> "$acc, $s" }
+        searchInput.setText(s)
+        searchInput.isFocusable = false
+
 
         recycler.layoutManager = LinearLayoutManager(this@MainActivity, RecyclerView.VERTICAL, false)
         adapter = SimpleSmsListAdapter(this@MainActivity,responseData)
@@ -66,7 +74,7 @@ class MainActivity : AppCompatActivity() {
             )
             == PackageManager.PERMISSION_GRANTED
         ) {
-            searchForSms()
+           Log.d("logs",getAggregatedSms().toString())
 
         } else {
             requestPermissions(
@@ -125,6 +133,50 @@ class MainActivity : AppCompatActivity() {
         }
         adapter = SimpleSmsListAdapter(this@MainActivity,responseData)
         recycler.adapter = adapter
+
+    }
+
+
+    private fun getListOfSMS(shortCode:String):HashMap<String, ArrayList<String>>{
+
+        var returnValue:HashMap<String, ArrayList<String>> = HashMap<String, ArrayList<String>>()
+        responseData = ArrayList()
+        if(shortCode.isEmpty()){
+//            Toast.makeText(this,"Invalid Input", Toast.LENGTH_SHORT).show()
+            return returnValue
+        }
+
+        val projection = arrayOf("_id","address","body","date")
+        val selection = "address='$shortCode'"
+
+        val cursor: Cursor? =
+            contentResolver.query(Uri.parse("content://sms/inbox"), projection, selection, null, null)
+
+        if (cursor?.moveToFirst() == true) { // must check the result to prevent exception
+            do {
+                responseData.add(cursor.getString(2))
+            } while (cursor.moveToNext())
+        } else {
+            Toast.makeText(this, "Not Found", Toast.LENGTH_SHORT).show()
+        }
+        adapter = SimpleSmsListAdapter(this@MainActivity,responseData)
+        recycler.adapter = adapter
+
+        returnValue[shortCode] = responseData
+
+        return returnValue
+
+    }
+
+    private fun getAggregatedSms():ArrayList<HashMap<String, ArrayList<String>>>{
+
+        var returnData:ArrayList<HashMap<String, ArrayList<String>>> = ArrayList()
+
+        for (value in shortCodes){
+            returnData.add(getListOfSMS(value))
+        }
+
+        return returnData
 
     }
 
