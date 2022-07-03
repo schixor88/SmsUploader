@@ -17,12 +17,14 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.Gson
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionDeniedResponse
 import com.karumi.dexter.listener.PermissionGrantedResponse
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.single.PermissionListener
+import org.json.JSONObject
 import java.util.jar.Manifest
 
 
@@ -31,8 +33,6 @@ private const val SMS_PERMISSION = 1004
 
 
 class MainActivity : AppCompatActivity() {
-
-
 
     lateinit var searchInput: EditText
     lateinit var button: Button
@@ -105,7 +105,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     private fun searchForSms(){
 
         responseData = ArrayList()
@@ -168,7 +167,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun getAggregatedSms():ArrayList<HashMap<String, ArrayList<String>>>{
+    private fun getAggregatedSms():String{
 
         var returnData:ArrayList<HashMap<String, ArrayList<String>>> = ArrayList()
 
@@ -176,8 +175,12 @@ class MainActivity : AppCompatActivity() {
             returnData.add(getListOfSMS(value))
         }
 
-        return returnData
+        var capture = Gson().toJson(returnData)
 
+        Log.d("toGson",capture)
+
+//      return returnData
+        return capture
     }
 
 
