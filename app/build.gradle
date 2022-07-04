@@ -56,6 +56,7 @@ dependencies {
     implementation "io.ktor:ktor-client-logging:$ktor_version"
     implementation "ch.qos.logback:logback-classic:1.2.3"
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$ktor_serialization"
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.1'
 
 
     /**

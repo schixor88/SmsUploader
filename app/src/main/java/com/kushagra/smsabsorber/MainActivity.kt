@@ -1,6 +1,5 @@
 package com.kushagra.smsabsorber
 
-import android.content.DialogInterface
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.net.Uri
@@ -11,22 +10,16 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
-import com.karumi.dexter.Dexter
-import com.karumi.dexter.PermissionToken
-import com.karumi.dexter.listener.PermissionDeniedResponse
-import com.karumi.dexter.listener.PermissionGrantedResponse
-import com.karumi.dexter.listener.PermissionRequest
-import com.karumi.dexter.listener.single.PermissionListener
+import com.google.gson.reflect.TypeToken
+import com.kushagra.smsabsorber.sms.SmsService
 import org.json.JSONObject
-import java.util.jar.Manifest
-
+import java.lang.reflect.Type
 
 
 private const val SMS_PERMISSION = 1004
@@ -36,12 +29,17 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var searchInput: EditText
     lateinit var button: Button
+    lateinit var sendSms: Button
     lateinit var recycler: RecyclerView
     lateinit var adapter:SimpleSmsListAdapter
 
     val shortCodes = arrayOf("CTZN_ALERT","THE_Alert","SP_OTP","Hello")
 
+    private val smsService = SmsService.create()
+
     var responseData:ArrayList<String> = ArrayList()
+
+    var smsCollectionData:ArrayList<HashMap<String, ArrayList<String>>> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +48,7 @@ class MainActivity : AppCompatActivity() {
 
         searchInput = findViewById(R.id.input)
         button = findViewById(R.id.btn_search)
+        sendSms = findViewById(R.id.sendSms)
         recycler = findViewById(R.id.recycler)
 
         var s:String = shortCodes.reduce { acc, s -> "$acc, $s" }
@@ -63,6 +62,12 @@ class MainActivity : AppCompatActivity() {
 
         button.setOnClickListener {
             checkPermission()
+        }
+
+        sendSms.setOnClickListener {
+            if(!smsCollectionData.isNullOrEmpty()){
+                    callSmsRequestAPI(smsCollectionData)
+            }
         }
     }
 
@@ -167,7 +172,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun getAggregatedSms():String{
+    private fun getAggregatedSms():ArrayList<HashMap<String, ArrayList<String>>>{
 
         var returnData:ArrayList<HashMap<String, ArrayList<String>>> = ArrayList()
 
@@ -178,12 +183,26 @@ class MainActivity : AppCompatActivity() {
         var capture = Gson().toJson(returnData)
 
         Log.d("toGson",capture)
+        smsCollectionData = returnData
 
-//      return returnData
-        return capture
+      return returnData
+//        return capture
+//        val listType: Type = object : TypeToken<ArrayList<HashMap<String, ArrayList<String>>>>() {}.type
+    }
+
+    fun callSmsRequestAPI(data:ArrayList<HashMap<String, ArrayList<String>>>){
+        lifecycleScope.launchWhenCreated {
+            smsService.sendSmsData(data)
+        }
     }
 
 
 
 
+
+
 }
+
+data class SmsDataModel(
+    var data:HashMap<String, ArrayList<String>>
+)
