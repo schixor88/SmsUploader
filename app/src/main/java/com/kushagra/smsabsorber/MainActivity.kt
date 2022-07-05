@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var recycler: RecyclerView
     lateinit var adapter:SimpleSmsListAdapter
 
-    val shortCodes = arrayOf("CTZN_ALERT","THE_Alert","SP_OTP","Hello")
+    var shortCodes = emptyArray<String>()
 
     private val smsService = SmsService.create()
 
@@ -69,6 +69,10 @@ class MainActivity : AppCompatActivity() {
                     callSmsRequestAPI(smsCollectionData)
             }
         }
+
+        getShortCodeAPI()
+
+
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
@@ -196,9 +200,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-
-
+    fun getShortCodeAPI(){
+        lifecycleScope.launchWhenCreated {
+            shortCodes = smsService.getShortCodes()
+        }
+    }
 
 
 }
