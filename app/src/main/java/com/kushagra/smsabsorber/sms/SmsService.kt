@@ -9,7 +9,7 @@ interface SmsService {
 
     suspend fun getShortCodes():Array<String>
 
-    suspend fun sendSmsData(data:ArrayList<HashMap<String, ArrayList<String>>>):String?
+    suspend fun sendSmsData(data:HashMap<String, ArrayList<String>>):String?
 
     companion object{
         fun create():SmsService{

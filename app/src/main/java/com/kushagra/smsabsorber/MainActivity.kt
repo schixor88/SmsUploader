@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.kushagra.smsabsorber.sms.SmsService
+import io.ktor.util.*
 import org.json.JSONObject
 import java.lang.reflect.Type
 
@@ -33,13 +34,14 @@ class MainActivity : AppCompatActivity() {
     lateinit var recycler: RecyclerView
     lateinit var adapter:SimpleSmsListAdapter
 
-    var shortCodes = emptyArray<String>()
+//    var shortCodes = emptyArray<String>()
+    var shortCodes = arrayOf("Khalti","MissedCall","Hello")
 
     private val smsService = SmsService.create()
 
     var responseData:ArrayList<String> = ArrayList()
 
-    var smsCollectionData:ArrayList<HashMap<String, ArrayList<String>>> = ArrayList()
+    var smsCollectionData:HashMap<String, ArrayList<String>> = HashMap()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,7 +72,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        getShortCodeAPI()
+//        getShortCodeAPI()
 
 
     }
@@ -145,13 +147,13 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun getListOfSMS(shortCode:String):HashMap<String, ArrayList<String>>{
+    private fun getListOfSMS(shortCode:String):ArrayList<String>{
 
         var returnValue:HashMap<String, ArrayList<String>> = HashMap<String, ArrayList<String>>()
         responseData = ArrayList()
         if(shortCode.isEmpty()){
 //            Toast.makeText(this,"Invalid Input", Toast.LENGTH_SHORT).show()
-            return returnValue
+            return ArrayList()
         }
 
         val projection = arrayOf("_id","address","body","date")
@@ -172,29 +174,32 @@ class MainActivity : AppCompatActivity() {
 
         returnValue[shortCode] = responseData
 
-        return returnValue
+//        return returnValue
+
+        return responseData
 
     }
 
-    private fun getAggregatedSms():ArrayList<HashMap<String, ArrayList<String>>>{
+    private fun getAggregatedSms():HashMap<String, ArrayList<String>>{
 
-        var returnData:ArrayList<HashMap<String, ArrayList<String>>> = ArrayList()
+        var returnData:HashMap<String, ArrayList<String>> = HashMap()
 
         for (value in shortCodes){
-            returnData.add(getListOfSMS(value))
+            returnData[value] = getListOfSMS(value)
+//            returnData.add(getListOfSMS(value))
         }
 
         var capture = Gson().toJson(returnData)
 
         Log.d("toGson",capture)
-        smsCollectionData = returnData
+//        smsCollectionData = returnData
 
       return returnData
 //        return capture
 //        val listType: Type = object : TypeToken<ArrayList<HashMap<String, ArrayList<String>>>>() {}.type
     }
 
-    fun callSmsRequestAPI(data:ArrayList<HashMap<String, ArrayList<String>>>){
+    fun callSmsRequestAPI(data:HashMap<String, ArrayList<String>>){
         lifecycleScope.launchWhenCreated {
             smsService.sendSmsData(data)
         }

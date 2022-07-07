@@ -22,7 +22,7 @@ class SmsServiceImpl(private val apiClient: HttpClient) : SmsService{
        }
     }
 
-    override suspend fun sendSmsData(data:ArrayList<HashMap<String, ArrayList<String>>>): String? {
+    override suspend fun sendSmsData(data:HashMap<String, ArrayList<String>>): String? {
         return try {
             apiClient.post<String?> {
                 url(APIConstants.ENDPOINT_SMS)
